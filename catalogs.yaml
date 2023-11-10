@@ -1,0 +1,63 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: customer_database
+  description: "Customer Data"
+  annotations:
+    backstage.io/managed-by-location: "url:https://github.com/my-org/my-repo/blob/master/database.yaml"
+spec:
+  type: database
+  owner: dev-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: images_s3
+  description: "ImagesS3 Bucket"
+  annotations:
+    backstage.io/managed-by-location: "url:https://github.com/my-org/my-repo/blob/master/s3-bucket.yaml"
+spec:
+  type: storage
+  owner: dev-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: customer_api
+  description: "Get Customer Images API"
+  annotations:
+    backstage.io/managed-by-location: "url:https://github.com/my-org/my-repo/blob/master/my-grpc-api.yaml"
+spec:
+  type: grpc
+  lifecycle: production
+  owner: dev-team
+  definition: |
+    syntax = "proto3";
+    package myorg.mygrpcapi;
+    message MyRequest {
+      string query = 1;
+    }
+    message MyResponse {
+      string result = 1;
+    }
+    service MyGrpcApi {
+      rpc MyMethod (MyRequest) returns (MyResponse);
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: customer-backend
+  description: "Customer Backend Service"
+  annotations:
+    backstage.io/managed-by-location: "url:https://github.com/my-org/my-repo/blob/master/my-backend.yaml"
+spec:
+  type: service
+  lifecycle: production
+  owner: rhdh
+  dependsOn:
+    - resource:customer_database
+    - resource:images_s3
+  providesApis:
+    - customer_api
