@@ -1,37 +1,49 @@
 ---
 apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: rh-one-system
+  tags:
+    - rh-one
+spec:
+  owner: rhdh  
+---
+apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: customer_database
-  description: "Customer Data"
+  name: rh-one_database
+  description: "Event Data"
   annotations:
     backstage.io/managed-by-location: "url:https://github.com/my-org/my-repo/blob/master/database.yaml"
 spec:
   type: database
-  owner: dev-team
+  owner: rhdh
+  system: rh-one-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: images_s3
-  description: "ImagesS3 Bucket"
+  name: events_s3
+  description: "Events S3 Bucket"
   annotations:
     backstage.io/managed-by-location: "url:https://github.com/my-org/my-repo/blob/master/s3-bucket.yaml"
 spec:
   type: storage
-  owner: dev-team
+  owner: rhdh
+  system: rh-one-system
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
-  name: customer_api
-  description: "Get Customer Images API"
+  name: events_api
+  description: "Get Events API"
   annotations:
     backstage.io/managed-by-location: "url:https://github.com/my-org/my-repo/blob/master/my-grpc-api.yaml"
 spec:
   type: grpc
   lifecycle: production
-  owner: dev-team
+  owner: rhdh
+  system: rh-one-system
   definition: |
     syntax = "proto3";
     package myorg.mygrpcapi;
@@ -48,16 +60,32 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: customer-backend
-  description: "Customer Backend Service"
+  name: rh-one-backend
+  description: "Event Backend Service"
   annotations:
     backstage.io/managed-by-location: "url:https://github.com/my-org/my-repo/blob/master/my-backend.yaml"
 spec:
   type: service
   lifecycle: production
   owner: rhdh
+  system: rh-one-system
   dependsOn:
-    - resource:customer_database
-    - resource:images_s3
+    - resource:rh-one_database
+    - resource:events_s3
   providesApis:
-    - customer_api
+    - events_api
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: rh-one-frontend
+  description: "Events Frontend Service"
+  annotations:
+    backstage.io/managed-by-location: "url:https://github.com/my-org/my-repo/blob/master/my-frontend.yaml"
+spec:
+  type: service
+  lifecycle: production
+  owner: rhdh
+  system: rh-one-system
+  consumesApis:
+    - events_api
